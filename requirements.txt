@@ -1,0 +1,9 @@
+telebot==0.0.4
+pyTelegramBotAPI==4.2.2
+requests
+python-telegram-bot==13.8.1
+pytube==11.0.2
+pytube3==9.6.4
+urllib3==1.26.7
+youtube-dl==2021.6.6
+instalooter
