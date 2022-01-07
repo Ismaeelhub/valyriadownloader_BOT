@@ -6,4 +6,4 @@ pytube==11.0.2
 pytube3==9.6.4
 urllib3==1.26.7
 youtube-dl==2021.6.6
-instalooter
+instalooter==2.4.2
