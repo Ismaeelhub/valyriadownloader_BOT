@@ -41,74 +41,59 @@ multi_instagram = 0
 code = ''
 d_inst = ''
 def downloadit(link, type, message):
+    print("from downloadit")
     global file, msid, chid
+    msid = message.message_id
+    chid = message.chat.id
+
     if isinsta == 0:
         res = requests.get( link, stream=True )
         if res.status_code == 200:
-            msid = message.message_id
             print( msid )
-            chid = message.chat.id
             ext = ".mp3" if type == "0" else ".mp4"
             file_name = f"{id}_{type}{ext}"
             print(file_name)
-            if exists(file_name):
-                print("exists")
-                openf = open( file_name, 'rb' )
-                print(file_name[-6:])
-                print(size, getsize(file_name))
-                if file_name[-6:] == "_0.mp3" and size == getsize(file_name):
-                    print('exist audio')
-                    bot.send_audio(message.chat.id, openf)
-                if file_name[-6:] == "_1.mp4" and size == getsize( file_name ):
-                    print("exists video")
-                    bot.send_video(message.chat.id, openf)
-            else:
-                # with open( file_name, 'wb' ) as f:
-                #     shutil.copyfileobj( res.raw, f )
-                #     print(res.status_code)
-                # file = open( filfe_name, 'rb' )
-
-                urlretrieve(link, file_name, Handle_Progress)
-                if type == '0':
-                    print(file_name)
-                    openf = open(file_name, 'rb')
-                    senddel = bot.send_message( message.chat.id,disable_notification=True,  text=f'Sending Audio {getrealsize(size)}')
-                    bot.send_document(  message.chat.id,  openf)
-                if type == "1" or type == '2':
-                    print(file_name)
-                    openf = open(file_name, 'rb')
-                    senddel = bot.send_message( message.chat.id,disable_notification=True,  text=f'Sending Video{getrealsize(size)}')
-                    bot.send_video(message.chat.id,  openf,disable_notification=True)
-                bot.delete_message(message.chat.id, senddel.id)
-                print( ' sucessfully Downloaded: ', file_name )
-                bot.delete_message(chid, msid)
-                bot.send_message( message.chat.id,disable_notification=False,  text="Sended Successfully ✅")
-    else:  # it's instagram
-        global code, d_inst
-        if multi_instagram == 0:
-            file_name = f"{code}_1.{type}"
-            if exists( file_name ) == False:
-                urlretrieve( apsurl, file_name, Handle_Progress )
-            openf = open( file_name, 'rb' )
-            if type == 'jpg':
-                bot.send_photo( message.chat.id, openf )
-            else:
-                bot.send_video( message.chat.id, openf )
-        else:
-            print( "multi" )
-            for n in range( len( link ) ):
-                if int(link[n]['size']) > LIMIT_SIZE:
-                    continue
-                else:
-                    file_name = f"{code}_{n}.{link[n]['type']}"
-                    if exists( file_name ) == 0:
-                        urlretrieve( link[n]['url'], file_name, Handle_Progress )
-                    openf = open( file_name, 'rb' )
-                    if link[n]['type'] == 'jpg':
-                        bot.send_photo( message.chat.id, openf )
-                    else:
-                        bot.send_video( message.chat.id, openf )
-            bot.delete_message( message.chat.id, int( d_inst ) )
+            urlretrieve(link, file_name, Handle_Progress)
+            if type == '0':
+                print(file_name)
+                openf = open(file_name, 'rb')
+                senddel = bot.send_message( message.chat.id,disable_notification=True,  text=f'Sending Audio {getrealsize(size)}')
+                bot.send_document(  message.chat.id,  openf)
+            if type == "1" or type == '2':
+                print(file_name)
+                openf = open(file_name, 'rb')
+                senddel = bot.send_message( message.chat.id,disable_notification=True,  text=f'Sending Video{getrealsize(size)}')
+                bot.send_video(message.chat.id,  openf,disable_notification=True)
+            bot.delete_message(message.chat.id, senddel.id)
+            print( ' sucessfully Downloaded: ', file_name )
+            bot.delete_message(chid, msid)
+            bot.send_message( message.chat.id,disable_notification=False,  text="Sended Successfully ✅")
+    # else:  # it's instagram
+    #     global code, d_inst
+    #     if multi_instagram == 0:
+    #         file_name = f"{code}_1.{type}"
+    #         print(file_name)
+    #         urlretrieve( apsurl, file_name, Handle_Progress )
+    #         openf = open( file_name, 'rb' )
+    #         print("after openf")
+    #         if type == 'jpg':
+    #             bot.send_photo( message.chat.id, openf )
+    #         else:
+    #             bot.send_video( message.chat.id, openf )
+    #     else:
+    #         print( "multi" )
+    #         for n in range( len( link ) ):
+    #             if int(link[n]['size']) > LIMIT_SIZE:
+    #                 continue
+    #             else:
+    #                 file_name = f"{code}_{n}.{link[n]['type']}"
+    #
+    #                 openf = open( file_name, 'rb' )
+    #                 if link[n]['type'] == 'jpg':
+    #                     bot.send_photo( message.chat.id, openf )
+    #                 else:
+    #                     bot.send_video( message.chat.id, openf )
+    #         bot.delete_message( message.chat.id, int( d_inst ) )
 def getrealsize(n):
     if n >= 1024 and n <= 1048576:
         return f'{round( n / 1024, 2 )} KB'
@@ -129,12 +114,13 @@ def mycb(total, recvd, ratio, rate, eta):
 def link_checker(message):
     global link, is_link, LIMIT_SIZE, id, apsurl, isinsta, multi_instagram ,type, code, d_inst
     link = message.text
-    id = pytube.streams.extract.video_id(link)
+
     bot.send_message(MY_CHAT_ID, f"trying{link}", disable_notification=True)
     bot.send_message(MY_CHAT_ID, str(message), disable_notification=True)
     print(link)
-    if str(link).find("youtube.com") > -1 and str(link).find("watch?v=") > -1 or str(link).startswith(basic_urls[-1]) or str(link).startswith(basic_urls[-2]):
-        getdel = bot.send_message( message.chat.id, 'Getting Informations 🔎' )
+    if str(link).find("youtube.com") > -1 and str(link).find("watch?v=") > -1 or str(link).startswith(basic_urls[-1]) :
+        id = pytube.streams.extract.video_id( link )
+        getdel = bot.send_message( message.chat.id, 'Getting Informations 🔎' ).id
 
         print("yes")
         print( "Choose===>" )
@@ -158,50 +144,52 @@ def link_checker(message):
             bot.send_message(message.chat.id, "File Too Large (50MB FILE LIMIT)")
             keybourd.add(toolarge)
         bot.send_message( message.chat.id,disable_notification=True,  text="Choose One:", reply_markup=keybourd)
-        bot.delete_message(message.chat.id, getdel.id)
-    elif str(link).startswith('https://www.instagram.com/p/') > -1:
-        isinsta = 1
-        multi_instagram = 0
-        d_inst = bot.send_message(message.chat.id, "Getting Informations from Instagram").id
-        url = str(link).replace("tv/", 'p/')
-        url = url[url.find( "p/" ) + 2:url.find( "/", url.find( "p/" ) + 2 )]
-        code = url
-        print(code)
-        looter = ProfileLooter("valyria_downloader")
-        post_info = looter.get_post_info(code)
-        if "edge_sidecar_to_children" not in post_info:
-            if 'video_url' in post_info:
-                data_type = 'video_url'
-                type = 'mp4'
-            else:
-                data_type = 'display_url'
-                type = 'jpg'
-            apsurl = post_info[data_type]
-            print( apsurl )
-            downloadit(apsurl, type, message)
-        if "edge_sidecar_to_children" in post_info:
-            multi_instagram = 1
-            urls = {}
-            for n in range( len( post_info['edge_sidecar_to_children']['edges'] ) ):
-                if 'video_url' in post_info['edge_sidecar_to_children']['edges'][n]['node']:
-                    if n == 0:
-                        data_type = 'video_url'
-                        type = 'mp4'
-                else:
-                    if n == 0:
-                        data_type = 'display_url'
-                        type = 'jpg'
-                urls[n] = {}
-                urls[n]['url'] = post_info['edge_sidecar_to_children']['edges'][n]['node'][
-                    data_type]
-                urls[n]['type'] = type
-                urls[n]['size'] = urlopen( Request(
-                    post_info['edge_sidecar_to_children']['edges'][n]['node'][data_type] ) ).info()[
-                    'Content-Length']
-            apsurl = urlopen(
-                Request( post_info['edge_sidecar_to_children']['edges'][n]['node'][data_type] ) )
-            print(urls)
-            downloadit(urls, type='multi', message=message)
+        bot.delete_message(message.chat.id, getdel)
+    # elif str(link).startswith('https://www.instagram.com/p/'):
+    #     print("instagram")
+    #     global d_inst
+    #     isinsta = 1
+    #     multi_instagram = 0
+    #     d_inst = bot.send_message(message.chat.id, "Getting Informations from Instagram").id
+    #     url = str(link).replace("tv/", 'p/')
+    #     url = url[url.find( "p/" ) + 2:url.find( "/", url.find( "p/" ) + 2 )]
+    #     code = url
+    #     print(code)
+    #     looter = ProfileLooter("valyria_downloader")
+    #     post_info = looter.get_post_info(code)
+    #     if "edge_sidecar_to_children" not in post_info:
+    #         if 'video_url' in post_info:
+    #             data_type = 'video_url'
+    #             type = 'mp4'
+    #         else:
+    #             data_type = 'display_url'
+    #             type = 'jpg'
+    #         apsurl = post_info[data_type]
+    #         print( apsurl )
+    #         downloadit(apsurl, type, message)
+    #     if "edge_sidecar_to_children" in post_info:
+    #         multi_instagram = 1
+    #         urls = {}
+    #         for n in range( len( post_info['edge_sidecar_to_children']['edges'] ) ):
+    #             if 'video_url' in post_info['edge_sidecar_to_children']['edges'][n]['node']:
+    #                 if n == 0:
+    #                     data_type = 'video_url'
+    #                     type = 'mp4'
+    #             else:
+    #                 if n == 0:
+    #                     data_type = 'display_url'
+    #                     type = 'jpg'
+    #             urls[n] = {}
+    #             urls[n]['url'] = post_info['edge_sidecar_to_children']['edges'][n]['node'][
+    #                 data_type]
+    #             urls[n]['type'] = type
+    #             urls[n]['size'] = urlopen( Request(
+    #                 post_info['edge_sidecar_to_children']['edges'][n]['node'][data_type] ) ).info()[
+    #                 'Content-Length']
+    #         apsurl = urlopen(
+    #             Request( post_info['edge_sidecar_to_children']['edges'][n]['node'][data_type] ) )
+    #         print(urls)
+    #         downloadit(urls, type='multi', message=message)
         # headers = apsurl.info()
         # if 'Content-Length' in headers:
         #     filesize = int( headers['Content-Length'] )
@@ -223,7 +211,7 @@ def download(message):
 
 
 def Handle_Progress(blocknum, blocksize, totalsize):
-    global msid, chid
+    global msid, chid, isinsta
     try:
         readed_data = blocknum * blocksize
         if totalsize > 0:
@@ -231,19 +219,10 @@ def Handle_Progress(blocknum, blocksize, totalsize):
             print( getrealsize( readed_data ), blocknum, getrealsize(size) )
             download_percentage = readed_data * 100 / totalsize
             #sleep(0.5)
-            if blocknum % 75 == 0 and blocknum > 75:
+            if blocknum % 75 == 0 and blocknum > 75 and isinsta == 0:
                 bot.edit_message_text(
                     f"Downloading {round( download_percentage, 3 )}% | {getrealsize( readed_data )}/{getrealsize(size)}", chid,
-                msid)
-                # nid = bot.send_message( chid, 'downloading...', timeout=2 , disable_notification=True).id
-                # bot.delete_message(chid, nid )
-            # if blocknum % 500 == 0 and blocknum > 500:
-            #     nid = bot.send_message( chid, 'downloading...', timeout=2).id
-            #     bot.delete_message(chid, nid)
-
-
-            # #print(int(download_percentage))
-
+                int(msid))
             if readed_data > totalsize:
                 print( "Download Completed 100%" )
     except ConnectionResetError:
